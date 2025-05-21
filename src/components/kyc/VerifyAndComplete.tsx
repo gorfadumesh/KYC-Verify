@@ -55,12 +55,14 @@ export default function VerifyAndComplete() {
   }, [htmlContent]);
 
   const isVerificationSuccessful = similarity ? parseFloat(similarity) >= 0.50 : false;
+  console.log("isVerificationSuccessful", isVerificationSuccessful);
+  console.log("similarity", similarity);
 
   return (
     <div className="flex flex-col justify-center items-center my-20">
-      <StyledHtmlContent>
+      {/* <StyledHtmlContent>
         <div className="text-center">
-          {/* <h2 className="text-2xl font-bold mb-2">{t("Similarity Score")}</h2> */}
+          <h2 className="text-2xl font-bold mb-2">{t("Similarity Score")}</h2>
           <p className="text-md">
             {t("Your similarity score is")} <strong>{similarity}</strong>
           </p>
@@ -68,7 +70,7 @@ export default function VerifyAndComplete() {
             {t("This score indicates the level of similarity between your ID and the live photo.")}
           </p>
         </div>
-      </StyledHtmlContent>
+      </StyledHtmlContent> */}
 
       {isVerificationSuccessful ? (
         <>
