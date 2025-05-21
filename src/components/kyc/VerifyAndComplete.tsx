@@ -42,9 +42,9 @@ export default function VerifyAndComplete() {
   const htmlContent = apiResult?.data?.[0] || '';
   return (
     <div className="flex flex-col justify-center items-center my-20">
-      <StyledHtmlContent>
+      {/* <StyledHtmlContent>
         <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
-      </StyledHtmlContent>
+      </StyledHtmlContent> */}
       <Player
         src="https://lottie.host/be80b83b-a760-406a-a878-5f3a4fc56d90/b8XPSjnqBM.json"
         className="player w-[200px] h-[200px]"
