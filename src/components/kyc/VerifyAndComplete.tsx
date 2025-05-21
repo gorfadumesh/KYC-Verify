@@ -58,7 +58,7 @@ export default function VerifyAndComplete() {
       <p className="text-md">
         {t("Your KYC Status will be updated after inspection.")}
       </p>
-      <Button asChild className="mt-6 bg-blue-600">
+      <Button asChild className="w-full h-18 mt-6 bg-orange-500 hover:bg-orange-600 text-white text-lg font-semibold flex items-center justify-center gap-2 rounded-full py-3">
         <Link href="/dashboard">{t("Return to Dashboard")}</Link>
       </Button>
     </div>

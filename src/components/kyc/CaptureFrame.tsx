@@ -177,7 +177,7 @@ const CaptureFrame: React.FC<CaptureFrameProps> = ({ onNextStep }) => {
           </div>
         )} */}
         <Button
-          className="bg-orange-500 hover:bg-orange-600 text-white text-lg font-semibold flex items-center justify-center gap-2 rounded-full py-3"
+          className="w-full h-18 mt-6 bg-orange-500 hover:bg-orange-600 text-white text-lg font-semibold flex items-center justify-center gap-2 rounded-full py-3"
           onClick={() => sendImagesToApi(capturedImage, portraitImage)}
           disabled={loading || !capturedImage || !portraitImage}
         >
