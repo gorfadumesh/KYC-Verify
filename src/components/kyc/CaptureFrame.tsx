@@ -53,11 +53,7 @@ const CaptureFrame: React.FC<CaptureFrameProps> = ({ onNextStep }) => {
     }
   }, []);
 
-  useEffect(() => {
-    if (typeof window !== "undefined" && typeof document !== "undefined") {
-      canvasRef.current = document.createElement("canvas");
-    }
-  }, []);
+
 
 
   // Show message after 2 seconds
