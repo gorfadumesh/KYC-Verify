@@ -141,54 +141,8 @@ export default function PersonalDetailsForm({
     }
   };
 
-  const recognition = useRef<SpeechRecognition | null>(null);
+  
 
-  useEffect(() => {
-    const handleSpeechRecognition = (event: SpeechRecognitionEvent) => {
-      const lastResult = event.results[event.results.length - 1][0].transcript
-        .trim()
-        .toLowerCase();
-      if (lastResult === "next") {
-        onNextStep();
-      }
-    };
-
-    if ("SpeechRecognition" in window) {
-      recognition.current = new SpeechRecognition();
-      recognition.current.lang = "en-US";
-      recognition.current.continuous = true;
-      recognition.current.interimResults = false;
-      recognition.current.onresult = handleSpeechRecognition;
-    } else {
-      console.error("SpeechRecognition is not supported in this browser.");
-    }
-
-    return () => {
-      if (recognition.current) {
-        recognition.current.stop();
-      }
-    };
-  }, [onNextStep]);
-
-  const startListening = () => {
-    if (recognition.current) {
-      recognition.current.start();
-    }
-  };
-
-  const stopListening = () => {
-    if (recognition.current) {
-      recognition.current.stop();
-    }
-  };
-
-  useEffect(() => {
-    startListening();
-
-    return () => {
-      stopListening();
-    };
-  }, []);
 
   const speakMessage = (message: string) => {
     const speech = new SpeechSynthesisUtterance();

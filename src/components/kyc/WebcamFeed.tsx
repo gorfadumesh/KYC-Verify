@@ -1,17 +1,17 @@
 import React, { useEffect, useRef } from "react";
 
-const WebcamFeed = ({ videoRef, frameType }) => {
+const WebcamFeed = ({ videoRef, frameType }:any) => {
   const localVideoRef = useRef(null);
   const usedVideoRef = videoRef || localVideoRef; // Use passed ref if available
 
-  const frames = {
+  const frames:any = {
     photo: { top: "15%", left: "25%", width: "50%", height: "70%" },
     pan: { top: "15%", left: "10%", width: "80%", height: "70%" },
     sign: { top: "30%", left: "20%", width: "60%", height: "40%" },
   };
 
   useEffect(() => {
-    let stream = null;
+    let stream:any = null;
 
     const startStream = async () => {
       try {
@@ -34,7 +34,7 @@ const WebcamFeed = ({ videoRef, frameType }) => {
       // Cleanup function to stop the stream
       if (stream) {
         const tracks = stream.getTracks();
-        tracks.forEach((track) => track.stop());
+        tracks.forEach((track:any) => track.stop());
       }
     };
   }, [usedVideoRef]);

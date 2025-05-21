@@ -28,7 +28,7 @@ const CaptureFrame: React.FC<CaptureFrameProps> = ({ onNextStep }) => {
     const doc = parser.parseFromString(html, 'text/html');
 
     // Get all table rows
-    const rows = doc.querySelectorAll('tr');
+    const rows = Array.from(doc.querySelectorAll('tr'));
 
     for (const row of rows) {
       const cells = row.querySelectorAll('td');
@@ -37,7 +37,7 @@ const CaptureFrame: React.FC<CaptureFrameProps> = ({ onNextStep }) => {
       for (let i = 0; i < cells.length; i++) {
         const cell = cells[i];
 
-        if (cell.textContent.trim() === 'Portrait') {
+        if (cell.textContent?.trim() === 'Portrait') {
           // Check if the next <td> exists and has an <img>
           const nextCell = cells[i + 1];
           if (nextCell) {

@@ -26,7 +26,7 @@ export default function Dashboard() {
     },
   ];
 
-  const speakMessage = (message) => {
+  const speakMessage = (message:any) => {
     if (typeof window !== "undefined" && window.speechSynthesis) {
       const speech = new SpeechSynthesisUtterance();
       speech.text = message;
