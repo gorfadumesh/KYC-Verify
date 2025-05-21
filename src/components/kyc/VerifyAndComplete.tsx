@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import "@/components/translations/Translations";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
+import { useEffect, useState } from "react";
 
 const Player = dynamic(() => import('@lottiefiles/react-lottie-player').then(mod => mod.Player), {
   ssr: false
@@ -37,14 +38,37 @@ const StyledHtmlContent = styled.div`
 
 export default function VerifyAndComplete() {
   const { t } = useTranslation();
+  const [similarity, setSimilarity] = useState<string | null>(null);
   // Read API response from localStorage
   const apiResult = JSON.parse(localStorage.getItem("kyc-verify-result") || '{}');
   const htmlContent = apiResult?.data?.[0] || '';
+
+    useEffect(() => {
+    if (!htmlContent) return;
+
+    // Use regex to find "Similarity: <value>"
+    const match = htmlContent.match(/Similarity:\s*([\d.]+)/i);
+
+    if (match && match[1]) {
+      setSimilarity(match[1]);
+    }
+  }, [htmlContent]);
+
   return (
     <div className="flex flex-col justify-center items-center my-20">
-      {/* <StyledHtmlContent>
-        <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
-      </StyledHtmlContent> */}
+      <StyledHtmlContent>
+        {/* <div dangerouslySetInnerHTML={{ __html: htmlContent }} /> */}
+        {/* score  */}
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">{t("Similarity Score")}</h2>
+          <p className="text-md">
+            {t("Your similarity score is")} <strong>{similarity}</strong>
+          </p>
+          <p className="text-md">
+            {t("This score indicates the level of similarity between your ID and the live photo.")}
+          </p>
+          </div>
+      </StyledHtmlContent>
       <Player
         src="https://lottie.host/be80b83b-a760-406a-a878-5f3a4fc56d90/b8XPSjnqBM.json"
         className="player w-[200px] h-[200px]"
