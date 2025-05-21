@@ -1,91 +1,45 @@
-import { useEffect, useRef, useState } from "react";
-import UploadAadhaar from "./UploadAadhaar";
-import UploadPan from "./UploadPan";
-import UploadPhoto from "./UploadPhoto";
-import UploadSignature from "./UploadSignature";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import "@/components/translations/Translations";
 import { useTranslation } from "react-i18next";
+import { FiUpload, FiX } from "react-icons/fi";
 
-const formSchema = z.object({
-  surname: z.string().min(2, {
-    message: "Surname must be at least 2 characters.",
-  }),
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  card_number: z.string().min(2, {
-    message: "Card Number is required.",
-  }),
-  place_of_birth: z.string().min(2, {
-    message: "Place of Birth must be at least 2 characters.",
-  }),
-  date_of_birth: z.string().min(2, {
-    message: "Date of Birth is required.",
-  }),
-  sex: z.enum(["M", "F"]),
-  height: z.string().min(2, {
-    message: "Height is required.",
-  }),
-  nationality: z.string().min(2, {
-    message: "Nationality is required.",
-  }),
-  issue_date: z.string().min(2, {
-    message: "Date of Issue is required.",
-  }),
-  expiry_date: z.string().min(2, {
-    message: "Date of Expiry is required.",
-  }),
-  idFront: z.any(),
-  idBack: z.any(),
-});
-
-export default function PersonalDetailsForm({
-  onNextStep,
-}: {
-  onNextStep: () => void;
-}) {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      surname: "",
-      name: "",
-      card_number: "",
-      place_of_birth: "",
-      date_of_birth: "",
-      sex: "M",
-      height: "",
-      nationality: "",
-      issue_date: "",
-      expiry_date: "",
-      idFront: undefined,
-      idBack: undefined,
-    },
-  });
+export default function IDCardUploadForm({ onNextStep }: { onNextStep: () => void }) {
   const { t } = useTranslation();
+  const [idFront, setIdFront] = useState<File | null>(null);
+  const [idBack, setIdBack] = useState<File | null>(null);
+  const [idFrontPreview, setIdFrontPreview] = useState<string | null>(null);
+  const [idBackPreview, setIdBackPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const handleFrontChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setIdFront(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => setIdFrontPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      setIdFrontPreview(null);
+    }
+  };
+
+  const handleBackChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setIdBack(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => setIdBackPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      setIdBackPreview(null);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!idFront || !idBack) return;
     setLoading(true);
+
     // Convert images to base64
     const fileToBase64 = (file: File): Promise<string> => {
       return new Promise((resolve, reject) => {
@@ -97,26 +51,12 @@ export default function PersonalDetailsForm({
     };
 
     try {
-      const idFrontBase64 = values.idFront ? await fileToBase64(values.idFront) : "";
-      const idBackBase64 = values.idBack ? await fileToBase64(values.idBack) : "";
+      const idFrontBase64 = await fileToBase64(idFront);
+      const idBackBase64 = await fileToBase64(idBack);
 
-      // Prepare payload as in the image
+      // Prepare payload as before
       const payload = {
-        data: [
-          idFrontBase64,
-          idBackBase64,
-          // Static values for the rest of the fields
-          "static_surname",
-          "static_name",
-          "static_card_number",
-          "static_place_of_birth",
-          "static_date_of_birth",
-          "static_sex",
-          "static_height",
-          "static_nationality",
-          "static_issue_date",
-          "static_expiry_date"
-        ],
+        data: [idFrontBase64, idBackBase64],
         event_data: null,
         fn_index: 6,
         session_hash: "orybe0zq5qx"
@@ -124,14 +64,10 @@ export default function PersonalDetailsForm({
 
       const response = await fetch("https://web.kby-ai.com/run/predict", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
       const result = await response.json();
-      console.log("API result:", result);
-      // Store the API result for the next step/component
       localStorage.setItem("kyc-verification-data", JSON.stringify(result));
       onNextStep();
     } catch (error) {
@@ -141,230 +77,97 @@ export default function PersonalDetailsForm({
     }
   };
 
-  
-
-
-  const speakMessage = (message: string) => {
-    const speech = new SpeechSynthesisUtterance();
-    speech.text = message;
-    speech.volume = 1;
-    speech.rate = 1;
-    speech.pitch = 1;
-    window.speechSynthesis.speak(speech);
-  };
-
   return (
-    <div className="flex justify-center">
-      <div className="space-y-10 py-10 w-8/12">
-        <h2 className="flex flex-col text-md font-semibold text-center border border-green-300 bg-green-300/10 hover:bg-green-300/20 hover:border-green-300 transition ease-in-out duration-500 hover:transition hover:ease-in-out hover:duration-500 rounded-lg p-3 w-max mx-auto">
-          <span>
-            {t("Fill your personal details and upload your documents.")}
-          </span>
-          <span>
-            {t(
-              "After completing the form, say next to proceed to the next step.",
-            )}
-          </span>
-        </h2>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col gap-5 mx-auto justify-center my-10"
-            encType="multipart/form-data"
-          >
-            <div className="flex justify-between w-full">
-              <FormField
-                control={form.control}
-                name="surname"
-                render={({ field }) => (
-                  <FormItem className="w-[32%]">
-                    <FormLabel>{t("Surname")}</FormLabel>
-                    <FormControl>
-                      <Input placeholder={t("Enter your surname")} {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
+    <div className="flex flex-col justify-center">
+      <div className="flex flex-col gap-2 mx-auto justify-center my-2 w-full max-w-md">
+        <h2 className="text-xl font-semibold">{t("Upload your ID Card")}</h2>
+        <span className="text-md">{t("Upload the front and back of your ID Card")}</span>
+      </div>
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-6 mx-auto justify-center my-10 w-full max-w-md"
+        encType="multipart/form-data"
+      >
+        <div>
+          <label className="block font-medium mb-2">{t("ID Card Front Side")}</label>
+          {!idFrontPreview ? (
+            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-orange-400 transition">
+              <FiUpload className="text-3xl text-orange-400 mb-2" />
+              <span className="text-gray-500 text-sm mb-1">Choose file</span>
+              <span className="text-xs text-gray-400">PNG, JPG, JPEG</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFrontChange}
+                required
+                className="hidden"
               />
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem className="w-[32%]">
-                    <FormLabel>{t("Name")}</FormLabel>
-                    <FormControl>
-                      <Input placeholder={t("Enter your name")} {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
+            </label>
+          ) : (
+            <div className="relative w-full h-32">
+              <img
+                src={idFrontPreview}
+                alt="ID Card Front Preview"
+                className="object-cover w-full h-full rounded-lg border"
               />
-              <FormField
-                control={form.control}
-                name="card_number"
-                render={({ field }) => (
-                  <FormItem className="w-[32%]">
-                    <FormLabel>{t("Card Number")}</FormLabel>
-                    <FormControl>
-                      <Input placeholder={t("Enter card number")} {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+              <button
+                type="button"
+                className="absolute top-2 right-2 bg-white rounded-full p-1 shadow hover:bg-gray-100"
+                onClick={() => {
+                  setIdFront(null);
+                  setIdFrontPreview(null);
+                }}
+                aria-label="Remove image"
+              >
+                <FiX className="text-gray-600" />
+              </button>
             </div>
-            <div className="flex justify-between w-full">
-              <FormField
-                control={form.control}
-                name="place_of_birth"
-                render={({ field }) => (
-                  <FormItem className="w-[49%]">
-                    <FormLabel>{t("Place of Birth")}</FormLabel>
-                    <FormControl>
-                      <Input placeholder={t("Enter place of birth")} {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="date_of_birth"
-                render={({ field }) => (
-                  <FormItem className="w-[49%]">
-                    <FormLabel>{t("Date of Birth")}</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="flex justify-between w-full">
-              <FormField
-                control={form.control}
-                name="sex"
-                render={({ field }) => (
-                  <FormItem className="w-[49%]">
-                    <FormLabel>{t("Sex")}</FormLabel>
-                    <FormControl>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t("Select sex")} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="M">{t("Male")}</SelectItem>
-                          <SelectItem value="F">{t("Female")}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="height"
-                render={({ field }) => (
-                  <FormItem className="w-[49%]">
-                    <FormLabel>{t("Height (cm)")}</FormLabel>
-                    <FormControl>
-                      <Input placeholder={t("Enter height in cm")} {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="flex justify-between w-full">
-              <FormField
-                control={form.control}
-                name="nationality"
-                render={({ field }) => (
-                  <FormItem className="w-[49%]">
-                    <FormLabel>{t("Nationality")}</FormLabel>
-                    <FormControl>
-                      <Input placeholder={t("Enter nationality")} {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="issue_date"
-                render={({ field }) => (
-                  <FormItem className="w-[49%]">
-                    <FormLabel>{t("Date of Issue")}</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="flex justify-between w-full">
-              <FormField
-                control={form.control}
-                name="expiry_date"
-                render={({ field }) => (
-                  <FormItem className="w-[49%]">
-                    <FormLabel>{t("Date of Expiry")}</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="flex justify-between w-full">
-              <FormField
-                control={form.control}
-                name="idFront"
-                render={({ field }) => (
-                  <FormItem className="w-[49%]">
-                    <FormLabel>{t("ID Card Front Side")}</FormLabel>
-                    <FormControl>
-                      <Input type="file" accept="image/*" onChange={e => field.onChange(e.target.files?.[0])} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="idBack"
-                render={({ field }) => (
-                  <FormItem className="w-[49%]">
-                    <FormLabel>{t("ID Card Back Side")}</FormLabel>
-                    <FormControl>
-                      <Input type="file" accept="image/*" onChange={e => field.onChange(e.target.files?.[0])} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
-            <Button className="w-full bg-blue-600" type="submit" disabled={loading}>
-              {loading ? t("Submitting, please wait...") : t("Next")}
-            </Button>
-           
-          </form>
-        </Form>
-
-        {/* <div className="flex justify-between">
-          <UploadAadhaar />
-          <UploadPan />
-        </div>
-        <div className="flex justify-between">
-          <UploadPhoto />
-          <UploadSignature />
+          )}
         </div>
         <div>
-          <Button
-            className="w-full bg-blue-600"
-            onClick={() => {
-              speakMessage(
-                t("Verify if your Aadhaar details fetched are correct."),
-              );
-              onNextStep();
-            }}
-          >
-            {t("Next")}
-          </Button>
-        </div> */}
-      </div>
+          <label className="block font-medium mb-2">{t("ID Card Back Side")}</label>
+          {!idBackPreview ? (
+            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-orange-400 transition">
+              <FiUpload className="text-3xl text-orange-400 mb-2" />
+              <span className="text-gray-500 text-sm mb-1">Choose file</span>
+              <span className="text-xs text-gray-400">PNG, JPG, JPEG</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleBackChange}
+                required
+                className="hidden"
+              />
+            </label>
+          ) : (
+            <div className="relative w-full h-32">
+              <img
+                src={idBackPreview}
+                alt="ID Card Back Preview"
+                className="object-cover w-full h-full rounded-lg border"
+              />
+              <button
+                type="button"
+                className="absolute top-2 right-2 bg-white rounded-full p-1 shadow hover:bg-gray-100"
+                onClick={() => {
+                  setIdBack(null);
+                  setIdBackPreview(null);
+                }}
+                aria-label="Remove image"
+              >
+                <FiX className="text-gray-600" />
+              </button>
+            </div>
+          )}
+        </div>
+        <Button
+          className="bg-orange-500 hover:bg-orange-600 text-white text-lg font-semibold flex items-center justify-center gap-2 rounded-full py-3"
+          type="submit"
+          disabled={loading || !idFront || !idBack}
+        >
+          {loading ? t("Processing, please wait...") : t("Confirm")}
+        </Button>
+      </form>
     </div>
   );
 }

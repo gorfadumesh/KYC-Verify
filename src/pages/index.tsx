@@ -1,17 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatedTooltipPreview } from "@/components/landing/Avatars";
 import { LandingPage } from "@/components/landing/Landing";
 import SignUp from "@/components/auth/SignUp";
 import VerifyOTP from "@/components/auth/VerifyOTP";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 export default function Home() {
   const [signedUp, setSignedUp] = useState(false);
+  const router = useRouter();
 
   const handleSignUpSuccess = () => {
     setSignedUp(true);
   };
+// redirect to dashboard
+  useEffect(() => {
+    router.push("/dashboard");
+  }, []);
+
   return (
     <div className="flex flex  h-screen items-center justify-center"  >
       {/* <div className="flex w-[50%] h-screen items-center justify-center">
@@ -29,7 +36,7 @@ export default function Home() {
         {!signedUp ? <SignUp onSuccess={handleSignUpSuccess} /> : <VerifyOTP />}
       </div> */}
       <Button asChild >
-        <Link href="/kyc" className="bg-blue-600">
+        <Link href="/dashboard" className="bg-blue-600">
           Start your KYC
         </Link>
       </Button>

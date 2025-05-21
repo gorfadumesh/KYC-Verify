@@ -1,58 +1,7 @@
 import React from "react";
-import styled from "styled-components";
 import { Button } from "../ui/button";
-import "@/components/translations/Translations";
+import { FiArrowLeft, FiSun, FiUser, FiEye, FiSmile } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
-
-const AadhaarContainer = styled.div`
-  text-align: center;
-  margin-top: 30px;
-  margin-bottom: 30px;
-`;
-
-const AadhaarDetails = styled.div`
-  background-color: #f4f4f4;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const Field = styled.div`
-  margin-bottom: 10px;
-`;
-
-const Label = styled.span`
-  font-weight: bold;
-`;
-
-const Value = styled.span`
-  margin-left: 10px;
-`;
-
-const StyledHtmlContent = styled.div`
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-    background: #fff;
-  }
-  th, td {
-    border: 1px solid #d1d5db;
-    padding: 8px 12px;
-    text-align: left;
-    font-size: 15px;
-  }
-  th {
-    background: #f3f4f6;
-    font-weight: bold;
-  }
-  tr:nth-child(even) {
-    background: #f9fafb;
-  }
-  tr:hover {
-    background: #e5e7eb;
-  }
-`;
 
 export default function AadhaarVerification({
   onNextStep,
@@ -60,46 +9,63 @@ export default function AadhaarVerification({
   onNextStep: () => void;
 }) {
   const { t } = useTranslation();
-  const speakMessage = (message: string) => {
-    if (typeof window !== "undefined" && window.speechSynthesis) {
-      const speech = new SpeechSynthesisUtterance();
-      speech.text = message;
-      speech.volume = 1;
-      speech.rate = 1;
-      speech.pitch = 1;
-      window.speechSynthesis.speak(speech);
-    }
-  };
 
-  const onSubmit = () => {
-    onNextStep();
-    // speakMessage(
-    //   "Position your face in the center of the frame and click the capture button to take a picture of your face. After capturing the picture, proceed to the next step.",
-    // );
-  };
-
-  // Read API response from localStorage
-  const apiResult = JSON.parse(localStorage.getItem("kyc-verification-data") || '{}');
-  // The API returns HTML in data[0]
-  console.log(apiResult,"apiResult");
-  const htmlContent = apiResult?.data?.[0] || '';
-  const htmlContent2 = apiResult?.data?.[1] || '';
+  const steps = [
+    {
+      icon: <FiSun className="text-orange-400 text-2xl" />, // Well-lit area
+      title: "Find A Well-Lit Area",
+      desc: "Make sure you are in a location with good lighting and minimal shadows for optimal facial recognition",
+    },
+    {
+      icon: <FiUser className="text-orange-400 text-2xl" />, // Position face
+      title: "Position Your Face",
+      desc: "Keep your face centered and maintain a comfortable distance from the camera. Avoid excessive tilting or turning of your head",
+    },
+    {
+      icon: <FiEye className="text-orange-400 text-2xl" />, // Clear view
+      title: "Clear View Of Your Face",
+      desc: "Remove any items that might obstruct your face such as glasses, face masks, or hats for better recognition",
+    },
+    {
+      icon: <FiSmile className="text-orange-400 text-2xl" />, // Stay still
+      title: "Stay Still",
+      desc: "Hold your device steady and keep your head still during the authentication process for a successful scan",
+    },
+  ];
 
   return (
-    <AadhaarContainer>
-      <h2 className="text-lg font-semibold mb-4">
-        {t("Here are the details we fetched from your ID card:")}
-      </h2>
-      <AadhaarDetails>
-        {/* Render the HTML content from the API response with custom styling */}
-        <StyledHtmlContent>
-          <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
-          <div dangerouslySetInnerHTML={{ __html: htmlContent2 }} />
-        </StyledHtmlContent>
-      </AadhaarDetails>
-      <Button className="my-10 bg-blue-600" onClick={onSubmit}>
-        {t("Verify & Continue")}
-      </Button>
-    </AadhaarContainer>
+    <div className="flex flex-col  bg-white px-4 pt-4 pb-8">
+      {/* Back Arrow */}
+      {/* <button className="mb-4 self-start" aria-label="Back">
+        <FiArrowLeft className="text-2xl text-gray-500" />
+      </button> */}
+      {/* Heading */}
+      <h2 className="text-2xl font-bold mb-2">Prepare for camera</h2>
+      <p className="text-gray-500 mb-6 max-w-lg">
+        In a moment, we'll ask you to take a selfie by smiling, this will let us know it's really you
+      </p>
+      {/* Steps Card */}
+      <div className="bg-white rounded-2xl shadow p-6 mb-8 max-w-lg w-full mx-auto">
+        {steps.map((step, idx) => (
+          <div key={step.title} className={`flex items-start gap-4 mb-6 last:mb-0`}>
+            <div>{step.icon}</div>
+            <div>
+              <div className="font-semibold mb-1">{step.title}</div>
+              <div className="text-gray-500 text-sm leading-snug">{step.desc}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Confirm Button */}
+      <div className="mt-auto w-full max-w-lg mx-auto">
+        <Button
+          className="w-full bg-orange-500 hover:bg-orange-600 text-white text-lg font-semibold flex items-center justify-center gap-2 rounded-full py-3"
+          onClick={onNextStep}
+        >
+          Confirm
+          <FiArrowLeft style={{ transform: 'rotate(180deg)' }} className="text-2xl" />
+        </Button>
+      </div>
+    </div>
   );
 }

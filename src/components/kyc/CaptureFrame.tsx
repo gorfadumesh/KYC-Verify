@@ -64,6 +64,10 @@ const CaptureFrame: React.FC<CaptureFrameProps> = ({ onNextStep }) => {
     return () => clearTimeout(messageTimer);
   }, []);
 
+    useEffect(() => {
+    canvasRef.current = document.createElement("canvas");
+  }, []);
+
   // Capture image after 3 seconds
   useEffect(() => {
     const captureTimer = setTimeout(() => {
@@ -119,35 +123,65 @@ const CaptureFrame: React.FC<CaptureFrameProps> = ({ onNextStep }) => {
       <h2 className="text-xl font-semibold">{t("Take a Live Photograph")}</h2>
       <p className="text-md">{t("Position your face inside the rectangle")}</p>
       <div className="video-capture-container flex flex-col justify-center">
-        <WebcamFeed videoRef={videoRef} frameType="photo" />
-        {/* upload from file and set to capturedImage */}
-        <input type="file" accept="image/*" onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              setCapturedImage(e.target?.result as string);
-            };
-            reader.readAsDataURL(file);
-          }
-        }} />
-        {/* {capturedImage && <img src={capturedImage} alt="Captured" />} */}
-        {showMessage && (
+      {showMessage && (
           <div className="font-semibold text-md my-4 text-red-600">
             {t("Move closer and show your face straight")}
           </div>
         )}
-        {loading && (
+        <WebcamFeed videoRef={videoRef} frameType="photo" />
+        {/* upload from file and set to capturedImage */}
+        <div className="flex flex-col items-center my-4">
+          {!capturedImage ? (
+            <label className="flex flex-col items-center justify-center w-56 h-40 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-orange-400 transition">
+              <svg className="text-3xl text-orange-400 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="32" height="32"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5-5m0 0l5 5m-5-5v12" /></svg>
+              <span className="text-gray-500 text-sm mb-1">Upload from file</span>
+              <span className="text-xs text-gray-400">PNG, JPG, JPEG</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                      setCapturedImage(e.target?.result as string);
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+                className="hidden"
+              />
+            </label>
+          ) : (
+            <div className="relative w-56 h-40">
+              <img
+                src={capturedImage}
+                alt="Preview"
+                className="object-cover w-full h-full rounded-lg border"
+              />
+              <button
+                type="button"
+                className="absolute top-2 right-2 bg-white rounded-full p-1 shadow hover:bg-gray-100"
+                onClick={() => setCapturedImage(null)}
+                aria-label="Remove image"
+              >
+                <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="20" height="20"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+          )}
+        </div>
+       
+        {/* {loading && (
           <div className="font-semibold text-md my-4 text-blue-600">
             {t("Submitting, please wait...")}
           </div>
-        )}
+        )} */}
         <Button
-          className="mt-4 bg-blue-600 text-white"
+          className="bg-orange-500 hover:bg-orange-600 text-white text-lg font-semibold flex items-center justify-center gap-2 rounded-full py-3"
           onClick={() => sendImagesToApi(capturedImage, portraitImage)}
           disabled={loading || !capturedImage || !portraitImage}
         >
-          {loading ? t("Submitting, please wait...") : t("Verify")}
+          {loading ? t("Processing, please wait...") : t("Verify")}
         </Button>
       </div>
 

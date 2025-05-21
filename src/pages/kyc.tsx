@@ -41,12 +41,12 @@ export default function KYC() {
     <div className="max-w-[1300px] mx-auto sm:p-10 py-10 px-5 min-h-screen">
       <TranslateButton />
       <div className="border-b border-gray-200 pb-5 mb-5">
-        <h1 className="text-2xl font-bold">{t("Welcome to Online KYC")}</h1>
-        <p className="font-semibold">
-          {t("Follow the steps to complete your KYC Process")}
-        </p>
+        <h1 className="text-2xl font-bold">{t("Online KYC")}</h1>
+        {/* <p className="font-semibold">
+          {t("Check Quality and confirm scanned documents")}
+        </p> */}
       </div>
-      <ol className="flex items-center w-full text-sm font-medium text-center text-gray-500 dark:text-gray-400 sm:text-base">
+      {/* <ol className="flex items-center w-full text-sm font-medium text-center text-gray-500 dark:text-gray-400 sm:text-base">
         <li
           className={`flex md:w-full items-center ${currentStep === 1 ? "text-blue-600 dark:text-blue-500" : "text-gray-500 dark:text-gray-400"} sm:after:content-[''] after:w-full after:h-1 after:border-b after:border-gray-200 after:border-1 after:hidden sm:after:inline-block after:mx-6 xl:after:mx-10 dark:after:border-gray-700`}
         >
@@ -91,7 +91,7 @@ export default function KYC() {
           <span className="me-2">4</span>
           {t("KYC Confirmation")}
         </li>
-      </ol>
+      </ol> */}
 
       {currentStep === 1 && <Form onNextStep={handleNextStep} />}
       {currentStep === 2 && <AadhaarVerification onNextStep={handleNextStep} />}

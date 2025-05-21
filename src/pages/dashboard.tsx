@@ -1,80 +1,168 @@
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { useRouter } from "next/router";
+import { FaIdCard, FaPassport } from "react-icons/fa";
+import { MdCreditCard } from "react-icons/md";
+import { FiArrowRight, FiCamera } from "react-icons/fi";
 
 export default function Dashboard() {
-  const services = [
+  const [step, setStep] = useState(1);
+  const [selected, setSelected] = useState<"id" | "passport" | "license" | null>(null);
+  const router = useRouter();
+
+  const options = [
     {
-      heading: "Fill your Personal Details",
-      description:
-        "Provide your personal information such as name, address, and contact details.",
+      key: "id",
+      label: "ID Card",
+      icon: <FaIdCard className="text-xl" />,
     },
     {
-      heading: "Upload your Documents",
-      description:
-        "Upload necessary documents such as aadhaar card, pan card, and any other required documents.",
+      key: "passport",
+      label: "Passport",
+      icon: <FaPassport className="text-xl" />,
     },
     {
-      heading: "Verify Aadhaar Details",
-      description: "Verify your Aadhaar details to confirm your identity.",
-    },
-    {
-      heading: "Video KYC Document Verification",
-      description:
-        "Undergo a video KYC (Know Your Customer) process for document verification.",
+      key: "license",
+      label: "Driving License",
+      icon: <MdCreditCard className="text-xl" />,
     },
   ];
 
-  const speakMessage = (message:any) => {
-    if (typeof window !== "undefined" && window.speechSynthesis) {
-      const speech = new SpeechSynthesisUtterance();
-      speech.text = message;
-      speech.volume = 1;
-      speech.rate = 1;
-      speech.pitch = 1;
-      window.speechSynthesis.speak(speech);
-    }
+  const handleContinue = () => {
+    // Optionally, you can store the selected type in localStorage or context
+    // localStorage.setItem("kyc-doc-type", selected);
+    router.push("/kyc");
   };
 
-  const startVoice = () => {
-    // Manually start the voice synthesis
-    speakMessage("Fill your personal details and upload your documents");
-    speakMessage(
-      "After completing the form, say next to proceed to the next step",
-    );
-  };
-
-  return (
-    <div className="max-w-[1300px] mx-auto sm:p-10 py-10 px-5 min-h-screen">
-      {/* <Navbar /> */}
-      <main>
-        <div className="flex flex-col items-center my-32">
-          {/* <h2 className="text-2xl font-semibold mb-4 underline underline-offset-2 decoration-green-400">
-            KYC Process Explained
-          </h2> */}
-          {/* <div className="flex flex-wrap justify-between mb-8">
-            {services.map((service, index) => (
-              <div
-                key={index}
-                className="max-w-[280px] border border-green-300 bg-green-300/10 hover:bg-green-300/20 hover:border-green-300 transition ease-in-out duration-500 hover:transition hover:ease-in-out hover:duration-500 rounded-lg p-5 mx-2 "
-              >
-                <h4 className="text-xl font-bold mb-1">{service.heading}</h4>
-                <p>{service.description}</p>
-              </div>
-            ))}
-          </div> */}
-          <section>
-            <div></div>
-            <Button asChild onClick={startVoice}>
-              <Link href="/kyc" className="bg-blue-600">
-                Start your KYC
-              </Link>
-            </Button>
-          </section>
+  // Step 1: Onboarding (Verify with Ease)
+  if (step === 1) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-white">
+        {/* Top Illustration */}
+        <div className="mb-6">
+          <img
+            src="https://cdn3d.iconscout.com/3d/premium/thumb/kyc-3d-icon-download-in-png-blend-fbx-gltf-file-formats--bitcoin-logo-document-costumer-id-cryptocurrency-pack-science-technology-icons-9276089.png?f=webp"
+            alt="Onboarding Illustration"
+            className="w-32 h-32 mx-auto"
+          />
         </div>
-      </main>
-      {/* <Footer /> */}
+        {/* Title */}
+        <div className="uppercase text-sm font-semibold tracking-widest mb-1">
+          COMPLETE <span className="text-orange-500">VERIFICATION</span>
+        </div>
+        {/* Main Heading */}
+        <h2 className="text-3xl font-bold mb-6 text-center">
+          Verify <span className="text-orange-500">with E-KYC</span>
+        </h2>
+        {/* Steps */}
+        <div className="w-full max-w-sm space-y-6 mb-8">
+          <div className="flex items-start gap-4">
+            <span className="mt-1 text-xl text-gray-700">
+              <FaIdCard />
+            </span>
+            <div>
+              <div className="font-semibold">Take a picture of your valid ID</div>
+              <div className="text-gray-500 text-sm">
+                To check your personal informations are correct
+              </div>
+            </div>
+          </div>
+          <div className="flex items-start gap-4">
+            <span className="mt-1 text-xl text-gray-700">
+              <FiCamera />
+            </span>
+            <div>
+              <div className="font-semibold">Take a selfie of yourself</div>
+              <div className="text-gray-500 text-sm">
+                To match your face to your passport or ID Photo
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Powered by Faceonlive */}
+        {/* <div className="flex items-center gap-3 mb-8">
+          <span className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-500 to-black flex items-center justify-center">
+            <span className="w-3 h-3 bg-white rounded-full"></span>
+          </span>
+          <div>
+            <div className="font-semibold text-sm">Powered by Faceonlive</div>
+            <div className="text-xs text-gray-500">
+              On-premises ID Verification, Biometric Authentication Solution Provider
+            </div>
+          </div>
+        </div> */}
+        {/* Footer Note */}
+        <div className="flex items-center gap-2 text-xs text-gray-400 mb-4">
+          <svg width="1em" height="1em" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5"/><path d="M10 6V10L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          Your data will be encrypted and stored securely
+        </div>
+        {/* Confirm Button */}
+        <button
+          className="w-full max-w-sm bg-orange-500 hover:bg-orange-600 text-white text-lg font-semibold flex items-center justify-center gap-2 rounded-full py-3"
+          onClick={() => setStep(2)}
+        >
+          Confirm
+          <FiArrowRight className="text-2xl" />
+        </button>
+      </div>
+    );
+  }
+
+  // Step 2: Document selection
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-white">
+      {/* Top Illustration */}
+      <div className="mb-8">
+        <img
+          src="https://thumb.ac-illust.com/c3/c332ce72fc87cf1e1f2eaa38cd6f3057_t.jpeg"
+          alt="ID Card"
+          className="w-40 h-32 mx-auto"
+        />
+      </div>
+      {/* Title */}
+      <h2 className="text-2xl font-bold mb-2 text-center">Upload proof of your identity</h2>
+      {/* Subtitle */}
+      <p className="text-gray-500 mb-8 text-center">Please submit a document below</p>
+      {/* Options */}
+      <div className="w-full max-w-xs space-y-3 mb-8">
+        {options.map((opt) => (
+          <button
+            key={opt.key}
+            type="button"
+            onClick={() => setSelected(opt.key as any)}
+            className={`flex items-center w-full p-4 border rounded-lg transition cursor-pointer ${
+              selected === opt.key
+                ? "bg-orange-50 border-orange-500"
+                : "hover:bg-orange-50"
+            }`}
+          >
+            <span className="mr-4">{opt.icon}</span>
+            <span className="flex-1 text-left font-medium">{opt.label}</span>
+            {selected === opt.key ? (
+              <span className="w-3 h-3 rounded-full bg-orange-500 mr-2"></span>
+            ) : (
+              <span className="w-3 h-3 rounded-full border border-gray-300 mr-2"></span>
+            )}
+            <FiArrowRight className="text-gray-400 text-xl" />
+          </button>
+        ))}
+      </div>
+      {/* Footer Note */}
+      <div className="flex items-center gap-2 text-xs text-gray-400 mb-4">
+        <svg width="1em" height="1em" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5"/><path d="M10 6V10L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+        Your information is only used for identity verification
+      </div>
+      {/* Continue Button */}
+      <button
+        className={`w-full max-w-xs bg-orange-500 hover:bg-orange-600 text-white text-lg font-semibold flex items-center justify-center gap-2 rounded-full py-3 transition ${
+          !selected ? "opacity-50 cursor-not-allowed" : ""
+        }`}
+        disabled={!selected}
+        onClick={handleContinue}
+      >
+        Continue
+        <FiArrowRight className="text-2xl" />
+      </button>
     </div>
   );
 }
