@@ -42,7 +42,7 @@ export default function AadhaarVerification({
       {/* Heading */}
       <h2 className="text-2xl font-bold mb-2">Prepare for camera</h2>
       <p className="text-gray-500 mb-6 max-w-lg">
-        In a moment, we'll ask you to take a selfie by smiling, this will let us know it's really you
+        In a moment, we&apos;ll ask you to take a selfie by smiling, this will let us know it&apos;s really you
       </p>
       {/* Steps Card */}
       <div className="bg-white rounded-2xl shadow p-6 mb-8 max-w-lg w-full mx-auto">
