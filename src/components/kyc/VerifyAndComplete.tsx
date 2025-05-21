@@ -1,9 +1,13 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Player } from "@lottiefiles/react-lottie-player";
+import dynamic from 'next/dynamic';
 import "@/components/translations/Translations";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
+
+const Player = dynamic(() => import('@lottiefiles/react-lottie-player').then(mod => mod.Player), {
+  ssr: false
+});
 
 const StyledHtmlContent = styled.div`
   margin-bottom: 2rem;
