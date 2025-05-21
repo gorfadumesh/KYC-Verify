@@ -21,7 +21,7 @@ const CaptureFrame: React.FC<CaptureFrameProps> = ({ onNextStep }) => {
   // Extract portrait image from HTML content in localStorage
   useEffect(() => {
     const apiResult = JSON.parse(localStorage.getItem("kyc-verification-data") || '{}');
-    console.log("apiResult", {apiResult});
+    console.log("apiResult", { apiResult });
     let html = apiResult?.data?.[1] || "";
     // Find the Portrait cell and extract the next <img src=...>
     const parser = new DOMParser();
@@ -54,8 +54,11 @@ const CaptureFrame: React.FC<CaptureFrameProps> = ({ onNextStep }) => {
   }, []);
 
   useEffect(() => {
-    canvasRef.current = document.createElement("canvas");
+    if (typeof window !== "undefined" && typeof document !== "undefined") {
+      canvasRef.current = document.createElement("canvas");
+    }
   }, []);
+
 
   // Show message after 2 seconds
   useEffect(() => {
@@ -151,7 +154,7 @@ const CaptureFrame: React.FC<CaptureFrameProps> = ({ onNextStep }) => {
           {loading ? t("Submitting, please wait...") : t("Verify")}
         </Button>
       </div>
-      
+
       {/* {portraitImage && <img src={portraitImage} alt="Portrait" />} */}
       {/* {capturedImage && <img src={capturedImage} alt="Captured" />} */}
     </div>
