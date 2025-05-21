@@ -15,7 +15,7 @@ const StyledHtmlContent = styled.div`
   div, table {
     width: 100%;
     border-collapse: collapse;
-    margin: 20px 0;
+    margin: 10px 0;
     background: #fff;
   }
   th, td {
@@ -60,7 +60,7 @@ export default function VerifyAndComplete() {
     <div className="flex flex-col justify-center items-center my-20">
       <StyledHtmlContent>
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2">{t("Similarity Score")}</h2>
+          {/* <h2 className="text-2xl font-bold mb-2">{t("Similarity Score")}</h2> */}
           <p className="text-md">
             {t("Your similarity score is")} <strong>{similarity}</strong>
           </p>
@@ -106,7 +106,7 @@ export default function VerifyAndComplete() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 mt-6 w-full sm:w-auto">
             <Button asChild className="h-18 bg-orange-500 hover:bg-orange-600 text-white text-lg font-semibold flex items-center justify-center gap-2 rounded-full py-3 px-6 w-full sm:w-auto">
-              <Link href="/kyc">{t("Verify Again")}</Link>
+              <Link href="/dashboard">{t("Verify Again")}</Link>
             </Button>
             <Button asChild className="h-18 bg-gray-500 hover:bg-gray-600 text-white text-lg font-semibold flex items-center justify-center gap-2 rounded-full py-3 px-6 w-full sm:w-auto">
               <Link href="/dashboard">{t("Return to Dashboard")}</Link>
