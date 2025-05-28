@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import WebcamFeed from "@/components/kyc/WebcamFeed";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import "@/components/translations/Translations";
 import { useTranslation } from "react-i18next";
 
@@ -53,9 +52,6 @@ const CaptureFrame: React.FC<CaptureFrameProps> = ({ onNextStep }) => {
     }
   }, []);
 
-
-
-
   // Show message after 2 seconds
   useEffect(() => {
     const messageTimer = setTimeout(() => {
@@ -64,7 +60,7 @@ const CaptureFrame: React.FC<CaptureFrameProps> = ({ onNextStep }) => {
     return () => clearTimeout(messageTimer);
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     canvasRef.current = document.createElement("canvas");
   }, []);
 
@@ -81,55 +77,104 @@ const CaptureFrame: React.FC<CaptureFrameProps> = ({ onNextStep }) => {
         context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
         const imageDataUrl = canvas.toDataURL("image/png");
         setCapturedImage(imageDataUrl);
-        // Send both images to API
-        // sendImagesToApi(imageDataUrl, portraitImage);
       }
     }, 5000);
     return () => clearTimeout(captureTimer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onNextStep, portraitImage]);
+  }, []);
 
-  // Send both images to API
-  const sendImagesToApi = async (webcamImage: string | null, portrait: string | null) => {
-    if (!webcamImage || !portrait) return;
+  // Handle both API calls sequentially
+  const handleVerification = async () => {
+    if (!capturedImage) return;
+    setLoading(true);
+
     try {
-      setLoading(true);
-      const payload = {
-        data: [portrait, webcamImage],
+      // First API call - ID Card verification
+      const idFront = localStorage.getItem("kyc-id-front");
+      const idBack = localStorage.getItem("kyc-id-back");
+
+      if (!idFront || !idBack) {
+        throw new Error("ID card images not found");
+      }
+
+      const idCardPayload = {
+        data: [idFront, idBack],
         event_data: null,
-        fn_index: 4, // Use the correct fn_index for this API
+        fn_index: 6,
         session_hash: "orybe0zq5qx"
       };
-      const response = await fetch("https://web.kby-ai.com/run/predict", {
+
+      const idCardResponse = await fetch("https://web.kby-ai.com/run/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(idCardPayload)
       });
-      const result = await response.json();
-      localStorage.setItem("kyc-verify-result", JSON.stringify(result));
+
+      const idCardResult = await idCardResponse.json();
+      localStorage.setItem("kyc-verification-data", JSON.stringify(idCardResult));
+
+      // Extract portrait from the first API response
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(idCardResult?.data?.[1] || "", 'text/html');
+      const rows = Array.from(doc.querySelectorAll('tr'));
+      let extractedPortrait = null;
+
+      for (const row of rows) {
+        const cells = row.querySelectorAll('td');
+        for (let i = 0; i < cells.length; i++) {
+          if (cells[i].textContent?.trim() === 'Portrait') {
+            const nextCell = cells[i + 1];
+            if (nextCell) {
+              const img = nextCell.querySelector('img');
+              if (img?.src?.startsWith('data:image')) {
+                extractedPortrait = img.src;
+                break;
+              }
+            }
+          }
+        }
+        if (extractedPortrait) break;
+      }
+
+      if (!extractedPortrait) {
+        throw new Error("Portrait extraction failed");
+      }
+
+      // Second API call - Face verification
+      const faceVerificationPayload = {
+        data: [extractedPortrait, capturedImage],
+        event_data: null,
+        fn_index: 4,
+        session_hash: "orybe0zq5qx"
+      };
+
+      const faceVerificationResponse = await fetch("https://web.kby-ai.com/run/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(faceVerificationPayload)
+      });
+
+      const faceVerificationResult = await faceVerificationResponse.json();
+      localStorage.setItem("kyc-verify-result", JSON.stringify(faceVerificationResult));
+
       onNextStep();
     } catch (error) {
-      console.error("Error sending images to API:", error);
+      console.error("Error during verification:", error);
     } finally {
       setLoading(false);
     }
   };
-
-  console.log("capturedImage", capturedImage);
-  console.log("portraitImage", portraitImage);
 
   return (
     <div className="text-center w-[600px] mx-auto my-10 p-5">
       <h2 className="text-xl font-semibold">{t("Take a Live Photograph")}</h2>
       <p className="text-md">{t("Position your face inside the rectangle")}</p>
       <div className="video-capture-container flex flex-col justify-center">
-      {showMessage && (
+        {showMessage && (
           <div className="font-semibold text-md my-4 text-red-600">
             {t("Move closer and show your face straight")}
           </div>
         )}
         <WebcamFeed videoRef={videoRef} frameType="photo" />
-        {/* upload from file and set to capturedImage */}
         <div className="flex flex-col items-center my-4">
           {!capturedImage ? (
             <label className="flex flex-col items-center justify-center w-56 h-40 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-orange-400 transition">
@@ -170,23 +215,14 @@ const CaptureFrame: React.FC<CaptureFrameProps> = ({ onNextStep }) => {
             </div>
           )}
         </div>
-       
-        {/* {loading && (
-          <div className="font-semibold text-md my-4 text-blue-600">
-            {t("Submitting, please wait...")}
-          </div>
-        )} */}
         <Button
           className="w-full h-18 mt-6 bg-orange-500 hover:bg-orange-600 text-white text-lg font-semibold flex items-center justify-center gap-2 rounded-full py-3"
-          onClick={() => sendImagesToApi(capturedImage, portraitImage)}
-          disabled={loading || !capturedImage || !portraitImage}
+          onClick={handleVerification}
+          disabled={loading || !capturedImage}
         >
           {loading ? t("Processing, please wait...") : t("Verify")}
         </Button>
       </div>
-
-      {/* {portraitImage && <img src={portraitImage} alt="Portrait" />} */}
-      {/* {capturedImage && <img src={capturedImage} alt="Captured" />} */}
     </div>
   );
 };

@@ -54,24 +54,12 @@ export default function IDCardUploadForm({ onNextStep }: { onNextStep: () => voi
       const idFrontBase64 = await fileToBase64(idFront);
       const idBackBase64 = await fileToBase64(idBack);
 
-      // Prepare payload as before
-      const payload = {
-        data: [idFrontBase64, idBackBase64],
-        event_data: null,
-        fn_index: 6,
-        session_hash: "orybe0zq5qx"
-      };
-
-      const response = await fetch("https://web.kby-ai.com/run/predict", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const result = await response.json();
-      localStorage.setItem("kyc-verification-data", JSON.stringify(result));
+      // Store images in localStorage
+      localStorage.setItem("kyc-id-front", idFrontBase64);
+      localStorage.setItem("kyc-id-back", idBackBase64);
       onNextStep();
     } catch (error) {
-      console.error("Error submitting form:", error);
+      console.error("Error processing images:", error);
     } finally {
       setLoading(false);
     }
@@ -165,7 +153,7 @@ export default function IDCardUploadForm({ onNextStep }: { onNextStep: () => voi
           type="submit"
           disabled={loading || !idFront || !idBack}
         >
-          {loading ? t("Processing, please wait...") : t("Confirm")}
+          {loading ? t("Processing, please wait...") : t("Next")}
         </Button>
       </form>
     </div>
