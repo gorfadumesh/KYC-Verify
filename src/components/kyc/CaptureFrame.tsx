@@ -3,12 +3,15 @@ import WebcamFeed from "@/components/kyc/WebcamFeed";
 import { Button } from "@/components/ui/button";
 import "@/components/translations/Translations";
 import { useTranslation } from "react-i18next";
+import { supabase } from "@/lib/supabase";
+import { v4 as uuidv4 } from 'uuid';
 
 interface CaptureFrameProps {
   onNextStep: () => void;
+  idType: string | null;
 }
 
-const CaptureFrame: React.FC<CaptureFrameProps> = ({ onNextStep }) => {
+const CaptureFrame: React.FC<CaptureFrameProps> = ({ onNextStep, idType }) => {
   const { t } = useTranslation();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -16,6 +19,7 @@ const CaptureFrame: React.FC<CaptureFrameProps> = ({ onNextStep }) => {
   const [portraitImage, setPortraitImage] = useState<string | null>(null);
   const [showMessage, setShowMessage] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [similarity, setSimilarity] = useState<string | null>(null);
 
   // Extract portrait image from HTML content in localStorage
   useEffect(() => {
@@ -82,7 +86,7 @@ const CaptureFrame: React.FC<CaptureFrameProps> = ({ onNextStep }) => {
     return () => clearTimeout(captureTimer);
   }, []);
 
-  // Handle both API calls sequentially
+  // Handle both API calls sequentially and store in Supabase
   const handleVerification = async () => {
     if (!capturedImage) return;
     setLoading(true);
@@ -154,8 +158,42 @@ const CaptureFrame: React.FC<CaptureFrameProps> = ({ onNextStep }) => {
       });
 
       const faceVerificationResult = await faceVerificationResponse.json();
-      localStorage.setItem("kyc-verify-result", JSON.stringify(faceVerificationResult));
 
+      // Store verification data in Supabase
+      const apiResult = faceVerificationResult;
+      const htmlContent = apiResult?.data?.[0] || '';
+
+      // Use regex to find "Similarity: <value>"
+      const match = htmlContent.match(/Similarity:\s*([\d.]+)/i);
+
+      const verificationScore = parseFloat(match?.[1] || '0');
+
+      // Generate a unique user ID
+      const generatedUserId = uuidv4();
+
+      // Store verification data in Supabase
+      const { data: verificationData, error: verificationError } = await supabase
+        .from('verifications')
+        .insert([
+          {
+            user_id: generatedUserId,
+            id_type: idType || 'unknown', // Use the passed idType
+            verification_score: verificationScore,
+            verification_date: new Date().toISOString(),
+            status: verificationScore >= 0.50 ? 'verified' : 'rejected',
+            id_front_image: idFront,
+            id_back_image: idBack,
+            selfie_image: capturedImage,
+            portrait_image: extractedPortrait,
+          }
+        ])
+        .select();
+
+      if (verificationError) {
+        throw new Error(`Error storing verification data: ${verificationError.message}`);
+      }
+
+      console.log('Verification data stored:', verificationData);
       onNextStep();
     } catch (error) {
       console.error("Error during verification:", error);

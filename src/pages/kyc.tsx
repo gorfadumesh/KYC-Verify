@@ -9,7 +9,16 @@ import { useTranslation } from "react-i18next";
 
 export default function KYC() {
   const [currentStep, setCurrentStep] = useState(1);
+  const [idType, setIdType] = useState<string | null>(null);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    // Read the ID type from localStorage when the component mounts
+    const storedIdType = localStorage.getItem("kyc-doc-type");
+    if (storedIdType) {
+      setIdType(storedIdType);
+    }
+  }, []);
 
   const handleNextStep = () => {
     setCurrentStep(currentStep + 1);
@@ -95,7 +104,7 @@ export default function KYC() {
 
       {currentStep === 1 && <Form onNextStep={handleNextStep} />}
       {currentStep === 2 && <AadhaarVerification onNextStep={handleNextStep} />}
-      {currentStep === 3 && <CaptureFrame onNextStep={handleNextStep} />}
+      {currentStep === 3 && <CaptureFrame onNextStep={handleNextStep} idType={idType} />}
       {currentStep === 4 && <VerifyAndComplete />}
       {/* <button
         className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"

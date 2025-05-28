@@ -29,8 +29,10 @@ export default function Dashboard() {
   ];
 
   const handleContinue = () => {
-    // Optionally, you can store the selected type in localStorage or context
-    // localStorage.setItem("kyc-doc-type", selected);
+    // Store the selected type in localStorage
+    if (selected) {
+      localStorage.setItem("kyc-doc-type", selected);
+    }
     router.push("/kyc");
   };
 
