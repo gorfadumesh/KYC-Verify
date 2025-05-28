@@ -74,12 +74,12 @@ export default function VerifyAndComplete() {
 
       {isVerificationSuccessful ? (
         <>
-          <Player
+          {/* <Player
             src="https://lottie.host/be80b83b-a760-406a-a878-5f3a4fc56d90/b8XPSjnqBM.json"
             className="player w-[200px] h-[200px]"
             loop
             autoplay
-          />
+          /> */}
           <h2 className="text-2xl font-bold mb-2">{t("KYC Process Completed!")}</h2>
           <p className="text-md">
             {t("Congrats your KYC Process has been completed.")}
