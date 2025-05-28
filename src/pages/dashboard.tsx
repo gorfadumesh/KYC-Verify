@@ -104,6 +104,12 @@ export default function Dashboard() {
           Confirm
           <FiArrowRight className="text-2xl" />
         </button>
+        {/* go to verification-list */}
+      <div className="mt-6">
+        <Link href="/verification-list" className="text-sm text-blue-600 hover:underline">
+          View Verification List
+        </Link>
+    </div>
       </div>
     );
   }
@@ -163,6 +169,8 @@ export default function Dashboard() {
         Continue
         <FiArrowRight className="text-2xl" />
       </button>
+
+      
     </div>
   );
 }
